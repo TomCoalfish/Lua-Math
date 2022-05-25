@@ -277,6 +277,7 @@
 %constant int fe_upward = FE_UPWARD;
 %constant int fe_dfl_env = FE_DFL_ENV;
 
+
 /*
 %inline %{
 typedef struct
