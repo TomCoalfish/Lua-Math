@@ -1,0 +1,33 @@
+
+[[tracing]]
+== Tracing utilities
+
+[[trace_objects]]
+* *trace_objects*(_boolean_) +
+[small]#Enable/disable tracing of objects creation and destruction (which by default
+is disabled). +
+If enabled, a printf is generated whenever an object is created or deleted,
+indicating the object type and the value of its raw handle.#
+
+[[now]]
+* _t_ = *now*(&nbsp;) +
+[small]#Returns the current time in seconds (a Lua number). +
+This is implemented with monotonic _clock_gettime(3)_, if available, or 
+with _gettimeofday(3)_ otherwise.#
+
+[[since]]
+* _dt_ = *since*(_t_) +
+[small]#Returns the time in seconds (a Lua number) elapsed since the time _t_, 
+previously obtained with the <<now, now>>(&nbsp;) function.#
+
+[[stats]]
+* _mean_, _var_, _min_, _max_ = *stats*(_{number}_) +
+[small]#Computes the mean, variance, and the minimum and maximum values for the given array
+of numbers.#
+
+[[dumpdata]]
+* *dumpdata*(_{number}_, _filename_, [_mode='w'_]) +
+[small]#Writes the given array of numbers to the given file file (plain ascii format, two columns index-value). +
+The data can then be displayed, for example, using gnuplot (_gnuplot> plot "filename" using 1:2 with lines_). +
+_mode_ is the same as in http://www.lua.org/manual/5.3/manual.html#pdf-io.open[io.open](&nbsp;).#
+

@@ -1,0 +1,100 @@
+
+== Vectors
+
+MoonGLMATH supports row and column numeric vectors of size 2, 3, and 4. 
+
+A vector *v* is implemented as a table having the vector elements in the array part, 
+starting from index 1. 
+Additionally, it also has the non-array fields *v.size* (= _2_, _3_, or _4_) and
+*v.type* (= '_column_' or '_row_').
+
+Vector elements are Lua link:++http://www.lua.org/manual/5.3/manual.html#2.1++[number]s
+and can be accessed through standard indexing (that is, *v[1]* is the first element, *v[2]*
+is the second element and so on).
+
+Vector elements can also be accessed using the *xyzw*, *rgba* and *stpq* syntactic sugar
+for positions, colors and texture coordinates (*v.x*, *v.r* and *v.s* are aliases for *v[1]*, 
+*v.y*, *v.g* and *v.t* are aliases for *v[2]*, and so on).
+
+The following constructors can be used to create vectors.
+
+[[glmath.vecN]]
+* _v_ = *vec2*(_..._) +
+_v_ = *vec3*(_..._) +
+_v_ = *vec4*(_..._) +
+_v_ = *vec2r*(_..._) +
+_v_ = *vec3r*(_..._) +
+_v_ = *vec4r*(_..._) +
+[small]#Create a vector. 
+The *vecN* function creates a column vector of size N (where N may be 2, 3 or 4), whereas the *vecNr* function creates a row vector of the same size. Values to initialize the vector elements may be optionally passed as a list of numbers, or as a previously created vector (exceeding values are discarded, while missing values are replaced with zeros).#
+
+[[glmath.tovecN]]
+* _t_ = *tovec2*(_t_) +
+_t_ = *tovec3*(_t_) +
+_t_ = *tovec4*(_t_) +
+_t_ = *tovec2r*(_t_) +
+_t_ = *tovec3r*(_t_) +
+_t_ = *tovec4r*(_t_) +
+[small]#Turn an appropriately sized table into a vector, by adding the relevant meta information to it.#
+
+.examples
+[source,lua]
+----
+v = glmath.vec3()            --> v = { 0, 0, 0 }'
+v = glmath.vec3(11, 22)      --> v = { 11, 22, 0 }'
+v = glmath.vec2(v)           --> v = { 11, 22 }'
+v = glmath.vec4(v)           --> v = { 11, 22, 0, 0 }'
+v = glmath.vec2(1, 2, 3, 4)  --> v = { 1, 2 }'
+----
+
+[[glmath.isvecN]]
+* _boolean_ = *isvec2*(_v_) +
+_boolean_ = *isvec3*(_v_) +
+_boolean_ = *isvec4*(_v_) +
+_boolean_ = *isvec2r*(_v_) +
+_boolean_ = *isvec3r*(_v_) +
+_boolean_ = *isvec4r*(_v_) +
+[small]#Check if _v_ is a vector of a given type (e.g. *isvec2r* checks if _v_ is a row vector of size 2).#
+
+'''
+Vectors have the following functions, also available as methods of their first argument:
+
+* _|v|_ = *norm*(_v_) +
+_|v|^2^_ = *norm2*(_v_) +
+_v/|v|_ = *normalize*(_v_) +
+_v^T^_ = *transpose*(_v_) +
+
+* _v~clamped~_ = *clamp*(_v_, _v~min~_, _v~max~_) +
+[small]#Element-wise clamp.#
+
+* _v~mix~_ = *mix*(_v_, _v~1~_, _k_) +
+[small]#Element-wise blend _v~mix~ = (1-k)*v +k*v~1~_, where _k_ is a number.#
+
+* _v~step~_ = *step*(_v_, _v~edge~_) +
+[small]#Element-wise step: _v~step~=0.0_ if _v&le;v~edge~_,  _v~step~=1.0_ otherwise (element subscripts are omitted for clarity). +
+The _v~edge~_ argument may be a number, meaning a vector with all elements equal to that number.#
+
+[[vec_smoothstep]]
+* _v~smoothstep~_ = *smoothstep*(_v_, _v~0~_, _v~1~_) +
+[small]#Element-wise smoothstep: omitting element subscripts, _v~smoothstep~_ is _0.0_ if _v&le;v~0~_,  _1.0_ if _v&ge;v~1~_, and is obtained by smooth Hermite interpolation if _v~0~&lt;v&lt;v~1~_
+(i.e. _v~smoothstep~=3t^2^-2t^3^_, where _t=(v-v~0~)/(v~1~-v~0~)_). The result is undefined if _v~0~&ge;v~1~_. +
+The _v~0~_ and _v~1~_ argument may be both be a number, meaning a vector with all elements equal to that number.#
+
+* _v~fade~_ = *fade*(_v_, _v~0~_, _v~1~_) +
+[small]#Element-wise improved smoothstep. Same as <<vec_smoothstep, smoothstep>>(&nbsp;), but with the smoother interpolation function _v~fade~=6t^5^-15t^4^+10t^3^_ (Perlin improved).#
+
+
+
+'''
+The following *vector operators* are supported:
+
+* *Unary minus*: _v = -v~1~_.
+* *Addition*: _v = v~1~ + v~2~_.
+* *Subtraction*: _v = v~1~ - v~2~_.
+* *Multiplication by a scalar*: _v = s * v1_, and _v = v~1~ * s_, where _s_ is a number.
+* *Division by a scalar*: _v = v~1~ / s_, where _s_ is a number.
+* *Dot product*: _s = v~1~ * v~2~_, where _v~1~_ and _v~2~_ are vectors of the same size (row*column, but row*row and column*column are accepted as well).
+* *Multiplication*: _m = v~1~ * v~2~_, where _v~1~_ is a column vector and _v~2~_ is a row vector of the same size. The result is a square matrix.
+* *Cross product*: _v = v~1~ % v~2~_, where _v~1~_ and _v~3~_ are size 3 vectors. Works also on operands of size 2 and 4, adapting them to size 3 (size 2 operands are extended to size 3 by adding a zero element, while size 4 operands are reduced to size 3 by ignoring the 4-th element). 
+The result is always a size 3 vector.
+

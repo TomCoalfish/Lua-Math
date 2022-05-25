@@ -1,0 +1,89 @@
+sudo: required
+language: generic
+group: deprecated-2017Q4
+
+matrix:
+  include:
+    - env: CXX=g++-6 CC=gcc-6
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.5
+          packages:
+            - g++-6
+            - clang-3.5
+
+    # - env: CXX=g++-7 CC=gcc-7
+    #   os: linux
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #         - llvm-toolchain-trusty-3.5
+    #       packages:
+    #         - g++-7
+    #         - clang-3.5
+
+    - env: CXX=clang++-3.9 CC=clang-3.9
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.5
+          packages:
+            - g++-6
+            - clang-3.5
+            - clang-3.9
+
+    - env: CXX=clang++-4.0 CC=clang-4.0
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+            - llvm-toolchain-trusty-3.5
+          packages:
+            - g++-6
+            - clang-3.5
+            - clang-4.0
+
+    - env: CXX=clang++-5.0 CC=clang-5.0
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-3.5
+          packages:
+            - g++-6
+            - clang-3.5
+            - clang-5.0
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+  - echo ${CC}
+  - echo ${CXX}
+  - ${CXX} --version
+  - sudo add-apt-repository -y ppa:nschloe/boost-nightly
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get install libboost-all-dev
+
+  - source .travis/cuda_install.sh
+
+  - echo "installing cmake"
+  - source .travis/cmake_install.sh
+  - ~/cmake-${CMAKE_VER}/bin/cmake --version
+
+  - echo "installing googletest"
+  - source .travis/gtest_install.sh
+
+script:
+  - ~/cmake-${CMAKE_VER}/bin/cmake -DCUDA_ARCH=61 -DUSE_HALF=OFF -DCUDA_HOST_COMPILER=/usr/bin/clang++-3.5 -G "Unix Makefiles"
+  - make -j2
+  - make install

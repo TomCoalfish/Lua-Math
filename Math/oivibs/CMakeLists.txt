@@ -1,0 +1,101 @@
+# (C) 2010 SIGIDAGI 
+#
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+SET(OI_MAJOR 0)
+SET(OI_MINOR 1)
+SET(OI_PATCH 10)
+
+MESSAGE(STATUS "Configuring OiVibartions ${ARMA_MAJOR}.${ARMA_MINOR}.${ARMA_PATCH}")
+MESSAGE(STATUS "Configuring OiVibartions cmake_source_dir  = ${CMAKE_SOURCE_DIR}")
+
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build/cmake/Modules/")
+
+SET(CMAKE_CXX_COMPILER "g++")
+SET(CMAKE_FORTRAN_COMPILER "gfortran")
+ENABLE_LANGUAGE(Fortran)
+
+PROJECT(OiVibrations)
+
+#SET(CMAKE_CXX_FLAGS "-g -Wall -std=gnu++0x")
+
+SET(OI_USE_NEKO false)
+SET(OI_USE_MYSQLPP false)
+SET(OI_USE_BOOST  false)
+SET(OI_USE_FFTTW3  false)
+SET(OI_USE_LAPACK  false)
+SET(OI_USE_ACML  false)
+
+
+FIND_PACKAGE(Boost REQUIRED)
+
+IF(Boost_FOUND)
+  MESSAGE(STATUS "Boost_MAJOR_VERSION = ${Boost_MAJOR_VERSION}")
+  MESSAGE(STATUS "Boost_MINOR_VERSION = ${Boost_MINOR_VERSION}")
+  
+  IF(Boost_MAJOR_VERSION GREATER 0)
+    IF(Boost_MINOR_VERSION GREATER 33)
+      SET(OI_USE_BOOST true)
+      MESSAGE(STATUS "Boost_INCLUDE_DIR = ${Boost_INCLUDE_DIR}")
+    ENDIF(Boost_MINOR_VERSION GREATER 33)
+  ENDIF(Boost_MAJOR_VERSION GREATER 0)
+ 
+  SET(OI_USE_BOOST true)
+ENDIF(Boost_FOUND)
+
+IF(OI_USE_BOOST STREQUAL false)
+  MESSAGE(STATUS "Boost libraries either not found or their version is too low (version 1.34 or later is good).")
+  MESSAGE(STATUS "( It's possible that CMake didn't find the particular version of Boost you may have. )")
+ENDIF(OI_USE_BOOST STREQUAL false)
+
+FIND_PACKAGE(Armadillo REQUIRED)
+SET(OI_LIBS ${ARMADILLO_LIBRARY})
+
+FIND_PACKAGE(BLAS)
+FIND_PACKAGE(LAPACK)
+FIND_PACKAGE(ACMLMP)
+
+IF(LAPACK_FOUND AND BLAS_FOUND)
+    SET(OI_LIBS ${OI_LIBS} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
+ELSEIF(ACMLMP_FOUND)
+    SET(OI_LIBS ${OI_LIBS} ${ACMLMP_LIBRARY})
+ELSE()
+    MESSAGE(FATAL_ERROR "lapack/blass or acml libraries should be installed!") 
+ENDIF()
+
+FIND_PACKAGE(FFTW3 REQUIRED)
+SET(OI_LIBS ${OI_LIBS} ${FFTW3_LIBRARY})
+
+FIND_PACKAGE(Neko)
+
+IF(NEKO_FOUND)
+    SET(OI_USE_NEKO true)
+    SET(OI_LIBS ${OI_LIBS} ${Neko_LIBRARY})
+ENDIF(NEKO_FOUND)
+
+FIND_PACKAGE(Mysql++)
+
+IF(MYSQLPP_FOUND)
+    MESSAGE(STATUS "Found Mysql++ library")
+    MESSAGE(STATUS "Mysql database}")
+    SET(OI_USE_MYSQLPP true)
+    SET(OI_LIBS ${OI_LIBS} ${MYSQLPP_LIBRARY})
+ENDIF(MYSQLPP_FOUND)
+
+FIND_PROGRAM(GNUPLOT_EXECUTABLE
+  NAMES gnuplot 
+)
+
+IF(GNUPLOT_EXECUTABLE)
+    MESSAGE(STATUS "Found GnuPlot executable")
+ELSE(GNUPLOT_EXECUTABLE)
+    MESSAGE(FATAL ERROR "Warning! Can NOT find GnuPlot. Client program needs for data visualization.")
+ENDIF()
+
+
+MESSAGE(STATUS "*** ")
+MESSAGE(STATUS "*** The OiVibrations run-time library component will be an alias for the following libraries:")
+MESSAGE(STATUS "*** OI_LIBS = ${OI_LIBS}")
+MESSAGE(STATUS "*** ")
+
+ADD_SUBDIRECTORY(src)
